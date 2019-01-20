@@ -9,7 +9,7 @@ import numpy as np
 from six.moves import urllib
 import tensorflow as tf
 
-import utils
+from examples import utils
 
 def read_data(file_path):
     """ Read data into a list of tokens 
@@ -44,16 +44,31 @@ def convert_words_to_index(words, dictionary):
     """ Replace each word in the dataset with its index in the dictionary """
     return [dictionary[word] if word in dictionary else 0 for word in words]
 
-def generate_sample(index_words, context_window_size):
+
+def generate_sample_skipgram(index_words, context_window_size):
     """ Form training pairs according to the skip-gram model. """
-    for index, center in enumerate(index_words):
-        context = random.randint(1, context_window_size)
+    # Skip Gram model, label word is the context word
+    # we are predicting context word using target word, by using (target, context) pairs
+    for index, target in enumerate(index_words):
+        context_len = random.randint(1, context_window_size)
         # get a random target before the center word
-        for target in index_words[max(0, index - context): index]:
-            yield center, target
+        for context in index_words[max(0, index - context_len): index]:
+            yield target, context
         # get a random target after the center wrod
-        for target in index_words[index + 1: index + context + 1]:
-            yield center, target
+        for context in index_words[index + 1: index + context_len + 1]:
+            yield target, context
+
+
+def generate_sample_cbow(index_words, context_window_size):
+    """ Form training pairs according to the CBOW model. """
+    # CBOW model, label word is the target word
+    # we are predicting target word using context words, by using (context_list, target) pairs
+    for index, target in enumerate(index_words):
+        context = index_words[max(0, index - context_window_size): index]
+        if len(context) < context_window_size:
+            context = [0] * (context_window_size - len(context)) + context
+        yield context, target
+
 
 def most_common_words(visual_fld, num_visualize):
     """ create a list of num_visualize most frequent words to visualize on TensorBoard.
@@ -66,19 +81,35 @@ def most_common_words(visual_fld, num_visualize):
         file.write(word)
     file.close()
 
-def batch_gen(download_url, expected_byte, vocab_size, batch_size, 
-                skip_window, visual_fld):
+
+def batch_gen(download_url, expected_byte, vocab_size, batch_size,
+                skip_window, visual_fld, mode='skip_gram'):
     local_dest = 'data/text8.zip'
     utils.download_one_file(download_url, local_dest, expected_byte)
     words = read_data(local_dest)
     dictionary, _ = build_vocab(words, vocab_size, visual_fld)
     index_words = convert_words_to_index(words, dictionary)
     del words           # to save memory
-    single_gen = generate_sample(index_words, skip_window)
-    
+    single_gen = None
+    if mode == 'skip_gram':
+        single_gen = generate_sample_skipgram(index_words, skip_window)
+    elif mode == 'cbow':
+        single_gen = generate_sample_cbow(index_words, skip_window)
+    else:
+        print('mode has to be either skip_gram or cbow')
+
     while True:
-        center_batch = np.zeros(batch_size, dtype=np.int32)
-        target_batch = np.zeros([batch_size, 1])
-        for index in range(batch_size):
-            center_batch[index], target_batch[index] = next(single_gen)
-        yield center_batch, target_batch
+        input_batch, label_batch = None, None
+        if mode == 'skip_gram':
+            input_batch = np.zeros(batch_size, dtype=np.int32)
+            label_batch = np.zeros([batch_size, 1])
+            for index in range(batch_size):
+                input_batch[index], label_batch[index] = next(single_gen)
+        elif mode == 'cbow':
+            input_batch = np.zeros([batch_size, skip_window], dtype=np.int32)
+            label_batch = np.zeros([batch_size, 1])
+            for index in range(batch_size):
+                input_batch[index], label_batch[index] = next(single_gen)
+        else:
+            print('mode has to be either skip_gram or cbow')
+        yield input_batch, label_batch

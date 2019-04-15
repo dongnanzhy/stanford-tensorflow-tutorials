@@ -1,4 +1,4 @@
-
+## assignments 01
 assignments/01/graphs/*
 assignments/01/checkpoints/*
 assignments/01/visualization/*
@@ -6,6 +6,8 @@ assignments/01/data/*
 assignments/02/graphs/*
 assignments/02/checkpoints/*
 assignments/02/visualization/*
+
+
 *.idea
 *.pdf
 

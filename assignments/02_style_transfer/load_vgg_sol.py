@@ -8,9 +8,15 @@ cs20.stanford.edu
 For more details, please read the assignment handout:
 
 """
+import os
+import sys
+
 import numpy as np
 import scipy.io
 import tensorflow as tf
+
+project_base = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(project_base)
 
 import utils
 

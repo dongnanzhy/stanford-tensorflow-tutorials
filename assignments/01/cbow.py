@@ -12,16 +12,16 @@ Lecture 04
 import os
 import sys
 
-project_base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(project_base, 'exampels'))
+project_base = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(project_base)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import numpy as np
 from tensorflow.contrib.tensorboard.plugins import projector
 import tensorflow as tf
 
-from examples import utils
-from examples import word2vec_utils
+import utils
+import word2vec_utils
 
 # Model hyperparameters
 VOCAB_SIZE = 50000

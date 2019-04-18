@@ -9,9 +9,15 @@ For more details, please read the assignment handout:
 https://docs.google.com/document/d/1FpueD-3mScnD0SJQDtwmOb1FrSwo1NGowkXzMwPoLH4/edit?usp=sharing
 
 """
+import os
+import sys
+
 import numpy as np
 import scipy.io
 import tensorflow as tf
+
+project_base = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(project_base)
 
 import utils
 
@@ -20,7 +26,13 @@ VGG_DOWNLOAD_LINK = 'http://www.vlfeat.org/matconvnet/models/imagenet-vgg-veryde
 VGG_FILENAME = 'imagenet-vgg-verydeep-19.mat'
 EXPECTED_BYTES = 534904783
 
+
 class VGG(object):
+    """
+    Intention of this class is to do inference(embedding) for input images.
+    Suggested by the paper, we’ll only use their weights for the convolution layers.
+    Author suggested that average pooling is better than max pooling, so we’ll have to do pooling ourselves.
+    """
     def __init__(self, input_img):
         utils.download(VGG_DOWNLOAD_LINK, VGG_FILENAME, EXPECTED_BYTES)
         self.vgg_layers = scipy.io.loadmat(VGG_FILENAME)['layers']
@@ -53,9 +65,17 @@ class VGG(object):
             for small images, you probably don't want to skip any pixel
         """
         ###############################
-        ## TO DO
-        out = None
+        with tf.variable_scope(layer_name) as scope:
+            w_array, b_array = self._weights(layer_idx, layer_name)
+            w = tf.constant(w_array, name='weights')
+            b = tf.constant(b_array, name='bias')
+            conv2d = tf.nn.conv2d(input=prev_layer,
+                                filter=w,
+                                strides=[1,1,1,1],
+                                padding='SAME')
+            out = tf.nn.relu(conv2d + b)
         ###############################
+        # self.layer_name = out
         setattr(self, layer_name, out)
 
     def avgpool(self, prev_layer, layer_name):
@@ -70,8 +90,11 @@ class VGG(object):
         Hint for choosing strides and kszie: choose what you feel appropriate
         """
         ###############################
-        ## TO DO
-        out = None
+        with tf.variable_scope(layer_name) as scope:
+            out = tf.nn.avg_pool(value=prev_layer,
+                                 ksize=[1,2,2,1],
+                                 strides=[1,2,2,1],
+                                 padding='SAME')
         ###############################
         setattr(self, layer_name, out)
 

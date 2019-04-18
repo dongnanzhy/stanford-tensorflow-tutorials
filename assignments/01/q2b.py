@@ -12,15 +12,15 @@ Lecture 03
 import os
 import sys
 
-project_base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(project_base, 'exampels'))
+project_base = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(project_base)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import numpy as np
 import tensorflow as tf
 import time
 
-from examples import utils
+import utils
 
 # Define paramaters for the model
 learning_rate = 0.001
@@ -31,7 +31,7 @@ n_test = 10000
 num_hidden = 300
 
 # Step 1: Read in data
-mnist_folder = os.path.join(project_base, 'examples/data/mnist')
+mnist_folder = os.path.join(project_base, 'data/mnist')
 utils.download_mnist(mnist_folder)
 train, val, test = utils.read_mnist(mnist_folder, flatten=True)
 

@@ -17,6 +17,7 @@ import numpy as np
 import scipy.misc
 from six.moves import urllib
 
+
 def download(download_link, file_name, expected_bytes):
     """ Download the pretrained VGG-19 model if it's not already downloaded """
     if os.path.exists(file_name):
@@ -31,7 +32,16 @@ def download(download_link, file_name, expected_bytes):
         raise Exception('File ' + file_name +
                         ' might be corrupted. You should try downloading it with a browser.')
 
+
 def get_resized_image(img_path, width, height, save=True):
+    """
+    reshape image
+    :param img_path:
+    :param width:
+    :param height:
+    :param save:
+    :return:
+    """
     image = Image.open(img_path)
     # PIL is column major so you have to swap the places of width and height
     image = ImageOps.fit(image, (width, height), Image.ANTIALIAS)
@@ -44,7 +54,17 @@ def get_resized_image(img_path, width, height, save=True):
     image = np.asarray(image, np.float32)
     return np.expand_dims(image, 0)
 
+
 def generate_noise_image(content_image, width, height, noise_ratio=0.6):
+    """
+    initialize an image for style transfer.
+    By adding random noise to content image
+    :param content_image:
+    :param width:
+    :param height:
+    :param noise_ratio:
+    :return:
+    """
     noise_image = np.random.uniform(-20, 20, (1, height, width, 3)).astype(np.float32)
     return noise_image * noise_ratio + content_image * (1 - noise_ratio)
 

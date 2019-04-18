@@ -3,14 +3,15 @@ assignments/01/graphs/*
 assignments/01/checkpoints/*
 assignments/01/visualization/*
 assignments/01/data/*
-assignments/02/graphs/*
-assignments/02/checkpoints/*
-assignments/02/visualization/*
+assignments/02_style_transfer/graphs/*
+assignments/02_style_transfer/checkpoints/*
+assignments/02_style_transfer/imagenet-vgg-verydeep-19.mat
 
-
+*.vscode
 *.idea
 *.pdf
 
+*.DS_Store
 *.SUNet
 *.pyc
 .env/*
